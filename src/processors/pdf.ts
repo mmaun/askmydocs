@@ -2,7 +2,6 @@
  * PDF document processor
  */
 
-import pdfParse from 'pdf-parse';
 import * as fs from 'fs/promises';
 import { FileProcessor } from '../types/index.js';
 import { logger } from '../utils/logger.js';
@@ -16,6 +15,9 @@ export class PdfProcessor implements FileProcessor {
     try {
       logger.debug(`Processing PDF file: ${filePath}`);
       const dataBuffer = await fs.readFile(filePath);
+      
+      // Lazy load pdf-parse to avoid startup issues
+      const pdfParse = (await import('pdf-parse')).default;
       const data = await pdfParse(dataBuffer);
       
       if (!data.text || data.text.trim().length === 0) {
