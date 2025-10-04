@@ -14,6 +14,10 @@ A production-ready Model Context Protocol (MCP) server that provides document in
 
 ## Quick Start
 
+## Support
+
+- **Help with installation**: If you need help with installation just email hello@biznezstack.com 
+
 ### 1. Configure in Claude Desktop
 
 Add this to your Claude Desktop configuration file:
