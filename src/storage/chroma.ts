@@ -1,8 +1,10 @@
 /**
- * ChromaDB storage backend for vector embeddings and search
+ * Simple file-based storage backend for vector embeddings and search
+ * No external database required - stores everything in JSON files
  */
 
-import { ChromaClient, Collection } from 'chromadb';
+import * as fs from 'fs/promises';
+import * as path from 'path';
 import {
   Document,
   DocumentChunk,
@@ -15,72 +17,92 @@ import {
 import { logger } from '../utils/logger.js';
 import { FileSystemStorage } from './filesystem.js';
 
+interface VectorIndex {
+  [chunkId: string]: {
+    embedding: number[];
+    documentId: string;
+    chunkIndex: number;
+  };
+}
+
 export class ChromaStorage implements StorageBackend {
-  private client: ChromaClient;
-  private collection: Collection | null = null;
   private fileStorage: FileSystemStorage;
-  private collectionName = 'knowledge_mgmt';
+  private indexPath: string;
+  private vectorIndex: VectorIndex = {};
 
   constructor(chromaDbPath: string, storageDir: string) {
-    // ChromaDB npm client uses default configuration (in-memory)
-    // The path parameter is only for server URLs, not local file paths
-    this.client = new ChromaClient();
     this.fileStorage = new FileSystemStorage(storageDir);
+    this.indexPath = path.join(storageDir, 'vector_index.json');
   }
 
   async initialize(): Promise<void> {
     try {
       await this.fileStorage.initialize();
       
-      // Get or create collection
-      this.collection = await this.client.getOrCreateCollection({
-        name: this.collectionName,
-        metadata: { 'hnsw:space': 'cosine' },
-      });
+      // Load existing vector index if it exists
+      try {
+        const indexData = await fs.readFile(this.indexPath, 'utf-8');
+        this.vectorIndex = JSON.parse(indexData);
+        logger.info(`Loaded vector index with ${Object.keys(this.vectorIndex).length} entries`);
+      } catch (error: any) {
+        if (error.code === 'ENOENT') {
+          logger.info('Creating new vector index');
+          this.vectorIndex = {};
+          await this.saveIndex();
+        } else {
+          throw error;
+        }
+      }
       
-      logger.info(`ChromaDB initialized with collection: ${this.collectionName}`);
+      logger.info('Storage backend initialized successfully');
     } catch (error: any) {
-      logger.error(`Failed to initialize ChromaDB: ${error.message}`);
-      throw new Error(`ChromaDB initialization failed: ${error.message}`);
+      logger.error(`Failed to initialize storage: ${error.message}`);
+      throw new Error(`Storage initialization failed: ${error.message}`);
     }
   }
 
-  async storeDocument(document: Document): Promise<void> {
-    if (!this.collection) {
-      throw new Error('ChromaDB not initialized');
-    }
+  private async saveIndex(): Promise<void> {
+    await fs.writeFile(this.indexPath, JSON.stringify(this.vectorIndex, null, 2), 'utf-8');
+  }
 
+  private cosineSimilarity(a: number[], b: number[]): number {
+    if (a.length !== b.length) return 0;
+    
+    let dotProduct = 0;
+    let normA = 0;
+    let normB = 0;
+    
+    for (let i = 0; i < a.length; i++) {
+      dotProduct += a[i] * b[i];
+      normA += a[i] * a[i];
+      normB += b[i] * b[i];
+    }
+    
+    if (normA === 0 || normB === 0) return 0;
+    return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
+  }
+
+  async storeDocument(document: Document): Promise<void> {
     try {
       // Store document metadata in filesystem
       await this.fileStorage.saveDocument(document);
 
-      // Store chunks with embeddings in ChromaDB
+      // Store chunk embeddings in vector index
       if (document.chunks.length > 0) {
-        const ids = document.chunks.map(chunk => `${document.id}_chunk_${chunk.index}`);
-        const embeddings = document.chunks.map(chunk => chunk.embedding!);
-        const documents = document.chunks.map(chunk => chunk.content);
-        const metadatas = document.chunks.map(chunk => ({
-          documentId: document.id,
-          chunkIndex: chunk.index,
-          startChar: chunk.metadata.startChar,
-          endChar: chunk.metadata.endChar,
-          filename: document.metadata.filename || '',
-          fileType: document.metadata.fileType,
-          tags: JSON.stringify(document.metadata.tags),
-          ...document.metadata.customMetadata,
-        }));
-
-        await this.collection.add({
-          ids,
-          embeddings,
-          documents,
-          metadatas,
-        });
-
-        logger.info(`Stored document ${document.id} with ${document.chunks.length} chunks in ChromaDB`);
+        for (const chunk of document.chunks) {
+          const chunkId = `${document.id}_chunk_${chunk.index}`;
+          this.vectorIndex[chunkId] = {
+            embedding: chunk.embedding!,
+            documentId: document.id,
+            chunkIndex: chunk.index,
+          };
+        }
+        
+        await this.saveIndex();
+        logger.info(`Stored document ${document.id} with ${document.chunks.length} chunks`);
       }
     } catch (error: any) {
-      logger.error(`Failed to store document in ChromaDB: ${error.message}`);
+      logger.error(`Failed to store document: ${error.message}`);
       throw new Error(`Document storage failed: ${error.message}`);
     }
   }
@@ -90,23 +112,21 @@ export class ChromaStorage implements StorageBackend {
   }
 
   async deleteDocument(documentId: string): Promise<void> {
-    if (!this.collection) {
-      throw new Error('ChromaDB not initialized');
-    }
-
     try {
       // Delete from filesystem
       await this.fileStorage.deleteDocument(documentId);
 
-      // Delete chunks from ChromaDB
-      const results = await this.collection.get({
-        where: { documentId },
-      });
-
-      if (results.ids.length > 0) {
-        await this.collection.delete({
-          ids: results.ids,
-        });
+      // Delete chunks from vector index
+      const keysToDelete = Object.keys(this.vectorIndex).filter(key => 
+        this.vectorIndex[key].documentId === documentId
+      );
+      
+      for (const key of keysToDelete) {
+        delete this.vectorIndex[key];
+      }
+      
+      if (keysToDelete.length > 0) {
+        await this.saveIndex();
       }
 
       logger.info(`Deleted document ${documentId} from storage`);
@@ -176,76 +196,66 @@ export class ChromaStorage implements StorageBackend {
   }
 
   async searchSimilar(embedding: number[], options: SearchOptions): Promise<SearchResult[]> {
-    if (!this.collection) {
-      throw new Error('ChromaDB not initialized');
-    }
-
     try {
       const maxResults = options.maxResults || 10;
       
-      // Build where filter
-      const where: any = {};
-      if (options.filterMetadata) {
-        Object.assign(where, options.filterMetadata);
-      }
-
-      // Query ChromaDB
-      const results = await this.collection.query({
-        queryEmbeddings: [embedding],
-        nResults: maxResults,
-        where: Object.keys(where).length > 0 ? where : undefined,
-      });
-
-      if (!results.ids || !results.ids[0] || results.ids[0].length === 0) {
-        return [];
-      }
-
-      // Convert results to SearchResult format
-      const searchResults: SearchResult[] = [];
+      // Calculate similarities for all chunks
+      const similarities: Array<{ chunkId: string; score: number; documentId: string; chunkIndex: number }> = [];
       
-      for (let i = 0; i < results.ids[0].length; i++) {
-        const chunkId = results.ids[0][i];
-        const distance = results.distances?.[0]?.[i] || 0;
-        const score = 1 - distance; // Convert distance to similarity score
+      for (const [chunkId, data] of Object.entries(this.vectorIndex)) {
+        const score = this.cosineSimilarity(embedding, data.embedding);
         
         // Apply similarity threshold
         if (options.similarityThreshold && score < options.similarityThreshold) {
           continue;
         }
-
-        const metadata = results.metadatas?.[0]?.[i] as any;
-        const content = results.documents?.[0]?.[i] || '';
-        const documentId = metadata?.documentId;
-
-        if (!documentId) {
-          continue;
-        }
-
+        
+        similarities.push({
+          chunkId,
+          score,
+          documentId: data.documentId,
+          chunkIndex: data.chunkIndex,
+        });
+      }
+      
+      // Sort by score descending
+      similarities.sort((a, b) => b.score - a.score);
+      
+      // Take top N results
+      const topResults = similarities.slice(0, maxResults);
+      
+      // Build search results
+      const searchResults: SearchResult[] = [];
+      
+      for (const result of topResults) {
         // Load full document
-        const document = await this.getDocument(documentId);
+        const document = await this.getDocument(result.documentId);
         if (!document) {
           continue;
         }
-
+        
+        // Apply tag filter if specified
+        if (options.filterTags && options.filterTags.length > 0) {
+          const hasMatchingTag = options.filterTags.some(tag => 
+            document.metadata.tags.includes(tag)
+          );
+          if (!hasMatchingTag) {
+            continue;
+          }
+        }
+        
         // Find the chunk
-        const chunk = document.chunks.find(c => c.index === metadata.chunkIndex);
+        const chunk = document.chunks.find(c => c.index === result.chunkIndex);
         if (!chunk) {
           continue;
         }
-
+        
         searchResults.push({
           chunk,
           document,
-          score,
-          distance,
+          score: result.score,
+          distance: 1 - result.score,
         });
-      }
-
-      // Apply tag filter if specified
-      if (options.filterTags && options.filterTags.length > 0) {
-        return searchResults.filter(result => 
-          options.filterTags!.some(tag => result.document.metadata.tags.includes(tag))
-        );
       }
 
       logger.info(`Found ${searchResults.length} search results`);
@@ -257,10 +267,6 @@ export class ChromaStorage implements StorageBackend {
   }
 
   async getStats(): Promise<CollectionStats> {
-    if (!this.collection) {
-      throw new Error('ChromaDB not initialized');
-    }
-
     try {
       const docIds = await this.fileStorage.listDocuments();
       const documents = await Promise.all(
@@ -277,12 +283,12 @@ export class ChromaStorage implements StorageBackend {
         fileTypes[type] = (fileTypes[type] || 0) + 1;
       });
 
-      const count = await this.collection.count();
+      const indexSize = Object.keys(this.vectorIndex).length;
 
       return {
         totalDocuments: validDocs.length,
         totalChunks,
-        collectionSize: count,
+        collectionSize: indexSize,
         averageChunksPerDocument: validDocs.length > 0 ? totalChunks / validDocs.length : 0,
         fileTypes,
       };
