@@ -1,16 +1,17 @@
-# Knowledge Management MCP Server
+# AskMyDoc – Knowledge Management Add-on
 
-A production-ready Model Context Protocol (MCP) server that provides document ingestion, vector search, and knowledge management capabilities. Built with TypeScript/Node.js, ChromaDB, and support for multiple embedding providers.
+AskMyDoc makes it simple to upload, organise, and search your documents. Just add your files, and AskMyDoc instantly turns them into a searchable knowledge base so you can ask questions and get clear answers in seconds. It’s fast, easy to set up, and helps you find the information you need without digging through folders.
 
 ## Features
 
-- 📄 **Multi-Format Support**: PDF, DOCX, TXT, MD, CSV, JSON, HTML
-- 🔍 **Semantic Search**: Vector-based similarity search with ChromaDB
-- 🧠 **Multiple Embedding Providers**: Transformers.js (local), OpenAI, Cohere
-- 📊 **Intelligent Chunking**: Sentence-aware, paragraph-aware, or fixed-size strategies
-- 🏷️ **Metadata & Tags**: Organize documents with custom metadata and tags
-- 🔄 **Batch Processing**: Ingest entire directories at once
-- 🚀 **NPX Ready**: Run instantly with `npx` - no installation required
+	•	📄 Works with Many File Types: Upload PDFs, Word docs, text files, spreadsheets, and more
+	•	🔍 Smart Search: Quickly find answers based on meaning, not just keywords
+	•	🧠 Flexible Options: Choose between built-in, cloud, or local AI for powering your search
+	•	📊 Breaks Down Large Documents: Splits files into easy-to-understand sections for better results
+	•	🏷️ Organise with Tags: Add labels or notes to keep documents easy to find
+	•	🔄 Upload in Bulk: Bring in entire folders of files at once
+	•	🚀 Quick to Start: Run instantly without complicated setup
+
 
 ## Quick Start
 
