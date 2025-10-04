@@ -3,12 +3,14 @@
  * Uses natural language processing to split text at sentence boundaries
  */
 
-import { WordTokenizer, SentenceTokenizer } from 'natural';
+import natural from 'natural';
 import { ChunkingStrategy, ChunkingOptions, DocumentChunk } from '../types/index.js';
 import { logger } from '../utils/logger.js';
 
+const { SentenceTokenizer } = natural;
+
 export class SentenceChunking implements ChunkingStrategy {
-  private sentenceTokenizer: SentenceTokenizer;
+  private sentenceTokenizer: any;
 
   constructor() {
     this.sentenceTokenizer = new SentenceTokenizer();

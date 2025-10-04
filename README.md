@@ -484,6 +484,7 @@ Contributions welcome! Please open an issue or submit a pull request.
 
 ## Support
 
+**Help with configuration**: email hello@biznezstack.com
 - **Issues**: [GitHub Issues](https://github.com/yourusername/knowledge-mgmt-mcp/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/yourusername/knowledge-mgmt-mcp/discussions)
 
