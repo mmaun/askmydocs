@@ -6,6 +6,6 @@ dist/
 .env.*
 coverage/
 *.tsbuildinfo
-storage/
-chroma_db/
+/storage/
+/chroma_db/
 
