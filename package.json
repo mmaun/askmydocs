@@ -1,0 +1,69 @@
+{
+  "name": "knowledge-mgmt-mcp",
+  "version": "1.0.0",
+  "description": "Production-ready MCP server for document ingestion and knowledge management with vector search. Supports PDF, DOCX, TXT, MD, CSV, JSON, HTML with ChromaDB and multiple embedding providers.",
+  "type": "module",
+  "bin": {
+    "knowledge-mgmt-mcp": "./dist/index.js"
+  },
+  "main": "./dist/index.js",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepare": "npm run build",
+    "dev": "tsx watch src/index.ts",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "knowledge-management",
+    "rag",
+    "vector-search",
+    "embeddings",
+    "chromadb",
+    "document-ingestion",
+    "semantic-search",
+    "transformers",
+    "openai",
+    "claude",
+    "pdf-parser",
+    "document-processing"
+  ],
+  "author": "Mani Maun",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/manimaun/knowledge-mgmt-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/manimaun/knowledge-mgmt-mcp/issues"
+  },
+  "homepage": "https://github.com/manimaun/knowledge-mgmt-mcp#readme",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.4",
+    "@xenova/transformers": "^2.17.2",
+    "chromadb": "^1.9.2",
+    "pdf-parse": "^1.1.1",
+    "mammoth": "^1.7.2",
+    "natural": "^7.0.7",
+    "compromise": "^14.13.0",
+    "csv-parse": "^5.5.6",
+    "jsdom": "^24.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/pdf-parse": "^1.1.4",
+    "@types/jsdom": "^21.1.6",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3"
+  }
+}
+
