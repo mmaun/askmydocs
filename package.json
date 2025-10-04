@@ -1,6 +1,6 @@
 {
   "name": "knowledge-mgmt-mcp",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Production-ready MCP server for document ingestion and knowledge management with vector search. Supports PDF, DOCX, TXT, MD, CSV, JSON, HTML with ChromaDB and multiple embedding providers.",
   "type": "module",
   "bin": {
