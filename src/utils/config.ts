@@ -26,7 +26,7 @@ export function loadConfig(): ServerConfig {
   const maxFileSize = parseInt(process.env.MAX_FILE_SIZE || '104857600', 10); // 100MB default
   const allowedFileTypes = process.env.ALLOWED_FILE_TYPES
     ? process.env.ALLOWED_FILE_TYPES.split(',')
-    : ['pdf', 'docx', 'txt', 'md', 'csv', 'json', 'html'];
+    : ['.pdf', '.PDF', '.docx', '.DOCX', '.txt', '.TXT', '.md', '.MD', '.csv', '.CSV', '.json', '.JSON', '.html', '.HTML'];
 
   return {
     storageDir,

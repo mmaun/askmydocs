@@ -76,8 +76,8 @@ class FastIngestCLI {
 
     if (options.directory) {
       const pattern = options.recursive 
-        ? `${options.directory}/**/*.{pdf,docx,txt,md,csv,json,html}`
-        : `${options.directory}/*.{pdf,docx,txt,md,csv,json,html}`;
+        ? `${options.directory}/**/*.{pdf,PDF,docx,DOCX,txt,TXT,md,MD,csv,CSV,json,JSON,html,HTML}`
+        : `${options.directory}/*.{pdf,PDF,docx,DOCX,txt,TXT,md,MD,csv,CSV,json,JSON,html,HTML}`;
       
       const found = await glob.glob(pattern, { nodir: true });
       files.push(...found);
@@ -87,11 +87,11 @@ class FastIngestCLI {
       files.push(...options.files);
     }
 
-    // Filter by allowed file types
-    const allowedExtensions = this.config.allowedFileTypes || ['.pdf', '.docx', '.txt', '.md', '.csv', '.json', '.html'];
+    // Filter by allowed file types (case insensitive)
+    const allowedExtensions = this.config.allowedFileTypes || ['.pdf', '.PDF', '.docx', '.DOCX', '.txt', '.TXT', '.md', '.MD', '.csv', '.CSV', '.json', '.JSON', '.html', '.HTML'];
     return files.filter(file => {
-      const ext = path.extname(file).toLowerCase();
-      return allowedExtensions.includes(ext);
+      const ext = path.extname(file);
+      return allowedExtensions.includes(ext) || allowedExtensions.includes(ext.toLowerCase());
     });
   }
 
