@@ -13,64 +13,114 @@ AskMyDoc makes it simple to upload, organise, and search your documents. Just ad
 	•	🚀 Quick to Start: Run instantly without complicated setup
 
 
-## Quick Start
+## 🚀 **Quick Start (For Non-Technical Users)**
+
+**Don't worry if you're not technical!** This guide will walk you through everything step-by-step using your computer's normal file manager and text editor.
+
+### **What You'll Need:**
+- ✅ A computer (Mac or Windows)
+- ✅ Claude Desktop installed
+- ✅ About 10 minutes to set up
+
+### **What We'll Do:**
+1. 📁 Create two special folders on your computer
+2. ⚙️ Tell Claude Desktop where to find these folders
+3. 🔄 Restart Claude Desktop
+4. 🎉 Start asking questions about your documents!
+
+**Ready? Let's start!** 👇
 
 ## Support
 
 - **Help with installation**: If you need help with installation just email hello@biznezstack.com 
 
-### 1. Create Required Directories
+### 1. Create Required Folders
 
-**You MUST create these directories before starting Claude Desktop:**
+**You MUST create these folders before starting Claude Desktop. Think of them as special folders where AskMyDoc will store your documents and search data.**
 
-#### Option A: Create in Your Home Directory (Recommended)
+#### 🖱️ **Easy Way: Using Your Computer's File Manager**
+
+**On Mac:**
+1. Open **Finder** (the folder icon in your dock)
+2. Click on your **username** in the sidebar (it's usually at the top)
+3. Right-click in an empty space and select **"New Folder"**
+4. Name it exactly: `knowledge-storage`
+5. Create another folder and name it exactly: `knowledge-chroma`
+
+**On Windows:**
+1. Open **File Explorer** (the folder icon on your taskbar)
+2. Click on **"This PC"** in the sidebar
+3. Double-click on **"Users"** then your username folder
+4. Right-click in an empty space and select **"New" → "Folder"**
+5. Name it exactly: `knowledge-storage`
+6. Create another folder and name it exactly: `knowledge-chroma`
+
+#### 📍 **How to Find Your Folder Paths**
+
+**On Mac:**
+1. Open **Finder**
+2. Click on your **username** folder
+3. Right-click on the `knowledge-storage` folder
+4. Hold **Option** key and select **"Copy [folder name] as Pathname"**
+5. Paste it somewhere to see the full path (it will look like `/Users/YourName/knowledge-storage`)
+
+**On Windows:**
+1. Open **File Explorer**
+2. Navigate to your username folder (usually `C:\Users\YourName\`)
+3. Right-click on the `knowledge-storage` folder
+4. Select **"Copy as path"**
+5. Paste it somewhere to see the full path (it will look like `C:\Users\YourName\knowledge-storage`)
+
+#### 💻 **Alternative: Using Terminal/Command Prompt (For Advanced Users)**
+
+If you're comfortable with command line tools:
+
+**Mac/Linux Terminal:**
 ```bash
-# Create the directories
+# Create the folders
 mkdir -p ~/knowledge-storage
 mkdir -p ~/knowledge-chroma
 
-# Verify they were created
-ls -la ~/knowledge-storage
-ls -la ~/knowledge-chroma
-```
-
-#### Option B: Create in a Custom Location
-```bash
-# Example: Create in Documents folder
-mkdir -p ~/Documents/knowledge-storage
-mkdir -p ~/Documents/knowledge-chroma
-```
-
-#### How to Get Your Exact Paths
-
-**macOS/Linux:**
-```bash
-# Get your home directory path
-echo $HOME
-
-# Get full path to your directories
+# Get the full paths
 echo "$HOME/knowledge-storage"
 echo "$HOME/knowledge-chroma"
 ```
 
-**Windows (PowerShell):**
-```powershell
-# Get your home directory path
-echo $env:USERPROFILE
+**Windows Command Prompt:**
+```cmd
+# Create the folders
+mkdir %USERPROFILE%\knowledge-storage
+mkdir %USERPROFILE%\knowledge-chroma
 
-# Get full path to your directories
-echo "$env:USERPROFILE\knowledge-storage"
-echo "$env:USERPROFILE\knowledge-chroma"
+# Get the full paths
+echo %USERPROFILE%\knowledge-storage
+echo %USERPROFILE%\knowledge-chroma
 ```
 
-### 2. Configure in Claude Desktop
+### 2. Configure Claude Desktop
 
-Add this to your Claude Desktop configuration file:
+**This step tells Claude Desktop where to find AskMyDoc and where to store your documents.**
 
-**macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
-**Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+#### 📁 **Step 1: Find Your Configuration File**
 
-**⚠️ IMPORTANT: Replace `/Users/yourname/` with your actual home directory path!**
+**On Mac:**
+1. Open **Finder**
+2. Press **Cmd + Shift + G** (Go to Folder)
+3. Type: `~/Library/Application Support/Claude/`
+4. Press **Enter**
+5. Look for a file called `claude_desktop_config.json`
+
+**On Windows:**
+1. Open **File Explorer**
+2. In the address bar, type: `%APPDATA%\Claude\`
+3. Press **Enter**
+4. Look for a file called `claude_desktop_config.json`
+
+#### ✏️ **Step 2: Edit the Configuration File**
+
+1. **Right-click** on `claude_desktop_config.json`
+2. Select **"Open with"** → **"TextEdit"** (Mac) or **"Notepad"** (Windows)
+3. **Replace everything** in the file with this code:
 
 ```json
 {
@@ -79,8 +129,8 @@ Add this to your Claude Desktop configuration file:
       "command": "npx",
       "args": ["-y", "knowledge-mgmt-mcp"],
       "env": {
-        "STORAGE_DIR": "/Users/yourname/knowledge-storage",
-        "CHROMA_DB_DIR": "/Users/yourname/knowledge-chroma",
+        "STORAGE_DIR": "REPLACE_WITH_YOUR_STORAGE_PATH",
+        "CHROMA_DB_DIR": "REPLACE_WITH_YOUR_CHROMA_PATH",
         "EMBEDDING_PROVIDER": "transformers",
         "EMBEDDING_MODEL": "Xenova/all-MiniLM-L6-v2",
         "CHUNK_SIZE": "1000",
@@ -92,24 +142,34 @@ Add this to your Claude Desktop configuration file:
 }
 ```
 
-#### Example with Real Paths
+#### 🔄 **Step 3: Replace the Paths**
 
-**If your username is "john" on macOS:**
-```json
-"STORAGE_DIR": "/Users/john/knowledge-storage",
-"CHROMA_DB_DIR": "/Users/john/knowledge-chroma"
-```
+**You need to replace the placeholder text with your actual folder paths:**
 
-**If your username is "mary" on Windows:**
-```json
-"STORAGE_DIR": "C:\\Users\\mary\\knowledge-storage",
-"CHROMA_DB_DIR": "C:\\Users\\mary\\knowledge-chroma"
-```
+1. Find `REPLACE_WITH_YOUR_STORAGE_PATH` in the file
+2. Replace it with the path you copied earlier (like `/Users/YourName/knowledge-storage`)
+3. Find `REPLACE_WITH_YOUR_CHROMA_PATH` in the file  
+4. Replace it with the second path you copied (like `/Users/YourName/knowledge-chroma`)
 
-#### What These Directories Do
+#### 📝 **Real Examples**
 
-- **`STORAGE_DIR`**: Stores your ingested documents and their text content
-- **`CHROMA_DB_DIR`**: Stores the vector database for fast searching (can be empty initially)
+**If your name is "Sarah" on Mac:**
+- Replace `REPLACE_WITH_YOUR_STORAGE_PATH` with: `/Users/Sarah/knowledge-storage`
+- Replace `REPLACE_WITH_YOUR_CHROMA_PATH` with: `/Users/Sarah/knowledge-chroma`
+
+**If your name is "Mike" on Windows:**
+- Replace `REPLACE_WITH_YOUR_STORAGE_PATH` with: `C:\Users\Mike\knowledge-storage`
+- Replace `REPLACE_WITH_YOUR_CHROMA_PATH` with: `C:\Users\Mike\knowledge-chroma`
+
+#### 💾 **Step 4: Save the File**
+
+1. Press **Cmd + S** (Mac) or **Ctrl + S** (Windows)
+2. Close the text editor
+
+#### 📋 **What These Folders Do**
+
+- **`STORAGE_DIR`**: This is where AskMyDoc keeps copies of your documents and their text
+- **`CHROMA_DB_DIR`**: This is where AskMyDoc stores the search index (like a library catalog)
 
 ### 3. Restart Claude Desktop
 
@@ -438,35 +498,42 @@ Splits text into fixed-size chunks with overlap.
 
 ## Troubleshooting
 
-### Directory Not Found Errors
+### 📁 **Folder Not Found Errors**
 
-**Error**: `ENOENT: no such file or directory, open '/Users/yourname/knowledge-storage'`
+**Problem**: You see an error like "no such file or directory" or "folder not found"
 
-**Solution**: The directories don't exist yet. Create them:
+**Solution**: The folders don't exist yet. Go back to **Step 1** and create them using your computer's file manager:
 
-```bash
-# Create the required directories
-mkdir -p ~/knowledge-storage
-mkdir -p ~/knowledge-chroma
+**On Mac:**
+1. Open **Finder**
+2. Click on your **username** in the sidebar
+3. Right-click and create a new folder called `knowledge-storage`
+4. Create another folder called `knowledge-chroma`
 
-# Make sure they're writable
-chmod 755 ~/knowledge-storage
-chmod 755 ~/knowledge-chroma
-```
+**On Windows:**
+1. Open **File Explorer**
+2. Go to **This PC** → **Users** → your username
+3. Right-click and create a new folder called `knowledge-storage`
+4. Create another folder called `knowledge-chroma`
 
-**Error**: `Permission denied` when accessing directories
+### 🔒 **Permission Denied Errors**
 
-**Solution**: Fix directory permissions:
+**Problem**: You see "Permission denied" or "Access denied" errors
 
-```bash
-# Make directories writable
-chmod 755 ~/knowledge-storage
-chmod 755 ~/knowledge-chroma
+**Solution**: The folders might be locked. Try this:
 
-# Or change ownership (if needed)
-sudo chown -R $USER:$USER ~/knowledge-storage
-sudo chown -R $USER:$USER ~/knowledge-chroma
-```
+**On Mac:**
+1. Right-click on the `knowledge-storage` folder
+2. Select **"Get Info"**
+3. Make sure **"Read & Write"** is selected for your user
+4. Do the same for `knowledge-chroma`
+
+**On Windows:**
+1. Right-click on the `knowledge-storage` folder
+2. Select **"Properties"**
+3. Go to **"Security"** tab
+4. Make sure your user has **"Full control"**
+5. Do the same for `knowledge-chroma`
 
 ### Server Not Starting
 
