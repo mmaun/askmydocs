@@ -19,12 +19,58 @@ AskMyDoc makes it simple to upload, organise, and search your documents. Just ad
 
 - **Help with installation**: If you need help with installation just email hello@biznezstack.com 
 
-### 1. Configure in Claude Desktop
+### 1. Create Required Directories
+
+**You MUST create these directories before starting Claude Desktop:**
+
+#### Option A: Create in Your Home Directory (Recommended)
+```bash
+# Create the directories
+mkdir -p ~/knowledge-storage
+mkdir -p ~/knowledge-chroma
+
+# Verify they were created
+ls -la ~/knowledge-storage
+ls -la ~/knowledge-chroma
+```
+
+#### Option B: Create in a Custom Location
+```bash
+# Example: Create in Documents folder
+mkdir -p ~/Documents/knowledge-storage
+mkdir -p ~/Documents/knowledge-chroma
+```
+
+#### How to Get Your Exact Paths
+
+**macOS/Linux:**
+```bash
+# Get your home directory path
+echo $HOME
+
+# Get full path to your directories
+echo "$HOME/knowledge-storage"
+echo "$HOME/knowledge-chroma"
+```
+
+**Windows (PowerShell):**
+```powershell
+# Get your home directory path
+echo $env:USERPROFILE
+
+# Get full path to your directories
+echo "$env:USERPROFILE\knowledge-storage"
+echo "$env:USERPROFILE\knowledge-chroma"
+```
+
+### 2. Configure in Claude Desktop
 
 Add this to your Claude Desktop configuration file:
 
 **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
 **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+
+**⚠️ IMPORTANT: Replace `/Users/yourname/` with your actual home directory path!**
 
 ```json
 {
@@ -46,11 +92,30 @@ Add this to your Claude Desktop configuration file:
 }
 ```
 
-### 2. Restart Claude Desktop
+#### Example with Real Paths
+
+**If your username is "john" on macOS:**
+```json
+"STORAGE_DIR": "/Users/john/knowledge-storage",
+"CHROMA_DB_DIR": "/Users/john/knowledge-chroma"
+```
+
+**If your username is "mary" on Windows:**
+```json
+"STORAGE_DIR": "C:\\Users\\mary\\knowledge-storage",
+"CHROMA_DB_DIR": "C:\\Users\\mary\\knowledge-chroma"
+```
+
+#### What These Directories Do
+
+- **`STORAGE_DIR`**: Stores your ingested documents and their text content
+- **`CHROMA_DB_DIR`**: Stores the vector database for fast searching (can be empty initially)
+
+### 3. Restart Claude Desktop
 
 The server will automatically download and start when Claude needs it.
 
-### 3. Start Using It
+### 4. Start Using It
 
 Ask Claude to help you:
 - "Ingest this PDF document for me"
@@ -372,6 +437,36 @@ Splits text into fixed-size chunks with overlap.
 | HTML | `.html`, `.htm` | Web pages |
 
 ## Troubleshooting
+
+### Directory Not Found Errors
+
+**Error**: `ENOENT: no such file or directory, open '/Users/yourname/knowledge-storage'`
+
+**Solution**: The directories don't exist yet. Create them:
+
+```bash
+# Create the required directories
+mkdir -p ~/knowledge-storage
+mkdir -p ~/knowledge-chroma
+
+# Make sure they're writable
+chmod 755 ~/knowledge-storage
+chmod 755 ~/knowledge-chroma
+```
+
+**Error**: `Permission denied` when accessing directories
+
+**Solution**: Fix directory permissions:
+
+```bash
+# Make directories writable
+chmod 755 ~/knowledge-storage
+chmod 755 ~/knowledge-chroma
+
+# Or change ownership (if needed)
+sudo chown -R $USER:$USER ~/knowledge-storage
+sudo chown -R $USER:$USER ~/knowledge-chroma
+```
 
 ### Server Not Starting
 
